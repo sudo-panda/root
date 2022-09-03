@@ -73,8 +73,8 @@ def numba2cpp(val):
     return _numba2cpp[val]
 
 _numba2cpptuple = {
-    nb_types.void            : ('void'),
-    nb_types.voidptr         : ('void*'),
+    nb_types.void            : ('void',),
+    nb_types.voidptr         : ('void*',),
     nb_types.int8            : ('int8_t', 'short', 'int', 'int16_t', 'long', 'int32_t', 'long long', 'int64_t', 'size_t', 'uint64_t', 'unsigned long long', 'uint32_t', 'unsigned long', 'uint16_t', 'unsigned int', 'float', 'double', 'unsigned short', 'uint8_t'),
     nb_types.uint8           : ('uint8_t', 'unsigned short', 'unsigned int', 'uint16_t', 'unsigned long', 'uint32_t', 'unsigned long long', 'uint64_t', 'size_t', 'long long', 'int64_t', 'long', 'int32_t', 'int', 'int16_t', 'float', 'double', 'short', 'int8_t'),
     nb_types.short           : ('short', 'int8_t', 'int', 'int16_t', 'long', 'int32_t', 'long long', 'int64_t', 'size_t', 'uint64_t', 'unsigned long long', 'uint32_t', 'unsigned long', 'uint16_t', 'unsigned int', 'float', 'double', 'uint8_t', 'unsigned short'),
@@ -90,7 +90,7 @@ _numba2cpptuple = {
     nb_types.longlong        : ('long long', 'int64_t', 'size_t', 'uint64_t','double', 'unsigned long long'),
     nb_types.ulonglong       : ('unsigned long long', 'uint64_t', 'size_t', 'long long', 'double', 'int64_t'),
     nb_types.float32         : ('float', 'double'),
-    nb_types.float64         : ('double'),
+    nb_types.float64         : ('double',),
 }
 
 _numba2cppargs = dict()
