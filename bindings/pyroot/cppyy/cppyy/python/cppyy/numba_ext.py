@@ -72,6 +72,68 @@ def numba2cpp(val):
         val = val.literal_type
     return _numba2cpp[val]
 
+_numba2cpptuple = {
+    nb_types.void            : ('void'),
+    nb_types.voidptr         : ('void*'),
+    nb_types.int8            : ('int8_t', 'short', 'int', 'int16_t', 'long', 'int32_t', 'long long', 'int64_t', 'size_t', 'uint64_t', 'unsigned long long', 'uint32_t', 'unsigned long', 'uint16_t', 'unsigned int', 'float', 'double', 'unsigned short', 'uint8_t'),
+    nb_types.uint8           : ('uint8_t', 'unsigned short', 'unsigned int', 'uint16_t', 'unsigned long', 'uint32_t', 'unsigned long long', 'uint64_t', 'size_t', 'long long', 'int64_t', 'long', 'int32_t', 'int', 'int16_t', 'float', 'double', 'short', 'int8_t'),
+    nb_types.short           : ('short', 'int8_t', 'int', 'int16_t', 'long', 'int32_t', 'long long', 'int64_t', 'size_t', 'uint64_t', 'unsigned long long', 'uint32_t', 'unsigned long', 'uint16_t', 'unsigned int', 'float', 'double', 'uint8_t', 'unsigned short'),
+    nb_types.ushort          : ('unsigned short', 'uint8_t', 'unsigned int', 'uint16_t', 'unsigned long', 'uint32_t', 'unsigned long long', 'uint64_t', 'size_t', 'long long', 'int64_t', 'long', 'int32_t', 'int', 'int16_t', 'float', 'double', 'int8_t', 'short'),
+    nb_types.intc            : ('int', 'int16_t', 'long', 'int32_t', 'long long', 'int64_t', 'size_t', 'uint64_t', 'unsigned long long', 'uint32_t', 'unsigned long', 'float', 'double', 'uint16_t', 'unsigned int'),
+    nb_types.uintc           : ('unsigned int', 'uint16_t', 'unsigned long', 'uint32_t', 'unsigned long long', 'uint64_t', 'size_t', 'long long', 'int64_t', 'long', 'int32_t', 'float', 'double', 'int', 'int16_t'),
+    nb_types.int32           : ('int32_t', 'long', 'long long', 'int64_t', 'size_t', 'uint64_t', 'unsigned long long', 'float', 'double', 'unsigned long', 'uint32_t'),
+    nb_types.uint32          : ('uint32_t', 'unsigned long', 'unsigned long long', 'uint64_t', 'size_t', 'long long', 'int64_t', 'float', 'double', 'int32_t', 'long'),
+    nb_types.int64           : ('int64_t', 'long long', 'size_t', 'unsigned long long', 'double', 'uint64_t'),
+    nb_types.uint64          : ('uint64_t', 'unsigned long long', 'size_t', 'int64_t', 'double', 'long long'),
+    nb_types.long_           : ('long', 'int32_t', 'long long', 'int64_t', 'size_t', 'uint64_t', 'unsigned long long', 'float', 'double', 'uint32_t', 'unsigned long'),
+    nb_types.ulong           : ('unsigned long', 'uint32_t', 'unsigned long long', 'uint64_t', 'size_t', 'long long', 'int64_t', 'float', 'double', 'int32_t', 'long'),
+    nb_types.longlong        : ('long long', 'int64_t', 'size_t', 'uint64_t','double', 'unsigned long long'),
+    nb_types.ulonglong       : ('unsigned long long', 'uint64_t', 'size_t', 'long long', 'double', 'int64_t'),
+    nb_types.float32         : ('float', 'double'),
+    nb_types.float64         : ('double'),
+}
+
+_numba2cppargs = dict()
+
+def numba2cppargs(args):
+    try:
+        return _numba2cppargs[args]
+    except KeyError:
+        pass
+
+    args_list = [()]
+    for val in args:
+        if hasattr(val, 'literal_type'):
+            val = val.literal_type
+        val_tuple = _numba2cpptuple[val]
+        args_list_curr = []
+        for ele in val_tuple:
+            args_list_curr.append(*(x + (ele, ) for x in args_list))
+        args_list = args_list_curr
+    
+    _numba2cppargs[args] = args_list
+
+    return args_list
+
+def find_overload(func, args):
+    overload = None
+
+    args_list = numba2cppargs(args)
+    errors = []
+    for args_ele in args_list:
+        try:
+            overload = func.__overload__(*args_ele)
+            break
+        except Exception as e:
+            errors.append(e)
+            pass
+    
+    if overload is None:
+        raise Exception(errors)
+
+    return overload
+
+
 # TODO: looks like Numba treats unsigned types as signed when lowering,
 # which seems to work as they're just reinterpret_casts
 _cpp2ir = {
@@ -124,7 +186,7 @@ class CppFunctionNumbaType(nb_types.Callable):
         except KeyError:
             pass
 
-        ol = CppFunctionNumbaType(self._func.__overload__(*(numba2cpp(x) for x in args)), self._is_method)
+        ol = CppFunctionNumbaType(find_overload(self._func, args), self._is_method)
 
         if self._is_method:
             args = (nb_types.voidptr, *args)
@@ -158,7 +220,8 @@ class CppFunctionNumbaType(nb_types.Callable):
 
     def get_pointer(self, func):
         if func is None: func = self._func
-        ol = func.__overload__(*(numba2cpp(x) for x in self.sig.args[int(self._is_method):]))
+
+        ol = find_overload(func, self.sig.args[int(self._is_method):])
         address = cppyy.addressof(ol)
         if not address:
             raise RuntimeError("unresolved address for %s" % str(ol))
