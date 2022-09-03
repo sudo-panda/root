@@ -169,6 +169,12 @@ setup(
     package_dir={'': 'python'},
     packages=find_packages('python', include=add_pkg),
 
+    entry_points={
+        'numba_extensions': [
+            'init = cppyy.numba_ext:_init_extension',
+        ],
+    },
+    
     cmdclass=cmdclass,
     distclass=MyDistribution,
 
