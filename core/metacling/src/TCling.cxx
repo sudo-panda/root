@@ -9232,6 +9232,14 @@ std::string TCling::MethodArgInfo_TypeNormalizedName(MethodArgInfo_t* marginfo) 
    return info->Type()->NormalizedName(*fNormalizedCtxt);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
+TypeInfo_t* TCling::MethodArgInfo_TypeInfo(MethodArgInfo_t *marginfo) const
+{
+   TClingMethodArgInfo* info = (TClingMethodArgInfo*) marginfo;
+   return (TypeInfo_t*) info->Type();
+}
+
 //______________________________________________________________________________
 //
 //  TypeInfo interface
@@ -9322,6 +9330,14 @@ const char* TCling::TypeInfo_TrueName(TypeInfo_t* tinfo) const
 {
    TClingTypeInfo* TClinginfo = (TClingTypeInfo*) tinfo;
    return TClinginfo->TrueName(*fNormalizedCtxt);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void* TCling::TypeInfo_QualTypePtr(TypeInfo_t* tinfo) const
+{
+   TClingTypeInfo* TClinginfo = (TClingTypeInfo*) tinfo;
+   return TClinginfo->QualTypePtr();
 }
 
 
