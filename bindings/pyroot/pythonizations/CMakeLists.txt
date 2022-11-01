@@ -76,6 +76,7 @@ set(py2_py3_sources
   ROOT/_facade.py
   ROOT/__init__.py
   ROOT/_numbadeclare.py
+  ROOT_numba/__init__.py
   ROOT/_pythonization/_cppinstance.py
   ROOT/_pythonization/_drawables.py
   ROOT/_pythonization/_generic.py
@@ -134,6 +135,7 @@ set(cpp_sources
 )
 
 set(ROOTPySrcDir python/ROOT)
+set(ROOTNumbaDir python/ROOT_numba)
 set(ROOT_headers_dir inc)
 
 # Add custom rules to copy the Python sources into the build directory
@@ -228,6 +230,10 @@ endforeach()
 
 # Install Python sources and bytecode
 install(DIRECTORY ${localruntimedir}/ROOT
+        DESTINATION ${CMAKE_INSTALL_PYTHONDIR}
+        COMPONENT libraries)
+
+install(DIRECTORY ${localruntimedir}/ROOT_numba
         DESTINATION ${CMAKE_INSTALL_PYTHONDIR}
         COMPONENT libraries)
 
