@@ -76,7 +76,6 @@ set(py2_py3_sources
   ROOT/_facade.py
   ROOT/__init__.py
   ROOT/_numbadeclare.py
-  ROOT_numba/__init__.py
   ROOT/_pythonization/_cppinstance.py
   ROOT/_pythonization/_drawables.py
   ROOT/_pythonization/_generic.py
@@ -107,6 +106,7 @@ set(py2_py3_sources
 )
 
 set(py3_sources
+  ROOT_numba/__init__.py
   ${PYROOT_EXTRA_PY3_SOURCE}
 )
 
